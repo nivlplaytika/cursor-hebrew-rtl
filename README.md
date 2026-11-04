@@ -6,9 +6,7 @@ A line with no Hebrew word stays left-to-right. A fenced code block stays left-t
 
 ## Install
 
-Download `hebrew-rtl-0.1.0.vsix` from the [releases](https://github.com/nivlplaytika/cursor-hebrew-rtl/releases) and install it with **Extensions: Install from VSIX**.
-
-After it is listed, you can also search for **Hebrew RTL** in Cursor's Extensions panel.
+Download `hebrew-rtl-0.1.0.vsix` from the [releases](https://github.com/nivlplaytika/cursor-hebrew-rtl/releases/tag/v0.1.0) and install it with **Extensions: Install from VSIX**.
 
 Cursor has to reload once after the first install. The extension applies again by itself after a Cursor update, on the next startup.
 
