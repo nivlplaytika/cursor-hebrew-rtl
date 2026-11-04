@@ -1,0 +1,11 @@
+/* One Hebrew word makes the paragraph right-to-left. The app still pins the
+   list marker to the left with padding-left. Move the marker to the start side. */
+
+.markdown-root :is(ul, ol) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.markdown-root li {
+  padding-inline-start: 2em;
+}

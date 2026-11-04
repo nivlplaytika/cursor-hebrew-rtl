@@ -1,0 +1,28 @@
+{
+  "name": "hebrew-rtl",
+  "displayName": "Hebrew RTL",
+  "description": "Makes Cursor chat right-to-left when a message contains a Hebrew word.",
+  "version": "0.1.0",
+  "publisher": "nivlplaytika",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["hebrew", "rtl", "cursor", "right-to-left"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nivlplaytika/cursor-hebrew-rtl"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "hebrewRtl.apply",
+        "title": "Hebrew RTL: Apply"
+      }
+    ]
+  }
+}
