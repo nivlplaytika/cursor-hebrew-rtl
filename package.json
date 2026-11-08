@@ -2,7 +2,7 @@
   "name": "hebrew-rtl",
   "displayName": "Hebrew RTL",
   "description": "Makes Cursor chat right-to-left when a message contains a Hebrew word.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "nivlplaytika",
   "license": "MIT",
   "engines": {

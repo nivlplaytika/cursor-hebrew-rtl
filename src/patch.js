@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const CSS = fs.readFileSync(path.join(__dirname, "rtl.css"), "utf8");
+const SCRIPT = fs.readFileSync(path.join(__dirname, "rtl-page.js"), "utf8");
 const START = "<!-- hebrew-rtl-start -->";
 const END = "<!-- hebrew-rtl-end -->";
 const BLOCK_RE = /<!-- hebrew-rtl-start -->[\s\S]*?<!-- hebrew-rtl-end -->\n*/;
@@ -166,20 +167,16 @@ function patchBundle(original) {
   return { text, applied, supported: true, reason: "" };
 }
 
-function extractStyle(html) {
-  const match = BLOCK_RE.exec(html);
-  if (!match) return null;
-  const style = /<style>([\s\S]*?)<\/style>/.exec(match[0]);
-  return style ? style[1] : null;
+function pageBlock() {
+  return START + "\n<style>" + CSS + "</style>\n<script>\n" + SCRIPT + "\n</script>\n" + END + "\n";
 }
 
-function injectHtml(html, css) {
+function injectHtml(html) {
   const stripped = html.replace(BLOCK_RE, "");
   if (!stripped.includes("</html>")) {
     throw new Error("workbench.html has no </html>");
   }
-  const block = START + "\n<style>" + css + "</style>\n" + END + "\n";
-  return stripped.replace("</html>", block + "</html>");
+  return stripped.replace("</html>", pageBlock() + "</html>");
 }
 
 function checksum(data) {
@@ -187,10 +184,9 @@ function checksum(data) {
 }
 
 function patchHtml(html) {
-  if (extractStyle(html) === CSS) {
-    return { html, changed: false };
-  }
-  return { html: injectHtml(html, CSS), changed: true };
+  const next = injectHtml(html);
+  if (next === html) return { html, changed: false };
+  return { html: next, changed: true };
 }
 
 function applyToTree(root) {
@@ -200,30 +196,24 @@ function applyToTree(root) {
     path.join(root, "out/vs/workbench/workbench.desktop.main.js"),
     path.join(root, "out/vs/workbench/workbench.glass.main.js"),
   ].filter((file) => fs.existsSync(file));
-  if (!fs.existsSync(htmlPath) || bundles.length === 0) {
+  if (!fs.existsSync(htmlPath)) {
     return { changed: false, supported: false, reason: "Cursor's chat files were not found." };
   }
 
   const originals = new Map();
   const pending = [];
-  let supported = true;
-  let reason = "";
 
   const htmlResult = patchHtml(fs.readFileSync(htmlPath, "utf8"));
-  if (htmlResult.changed) pending.push([htmlPath, Buffer.from(htmlResult.html), "stylesheet"]);
+  if (htmlResult.changed) pending.push([htmlPath, Buffer.from(htmlResult.html), "page"]);
 
   for (const bundle of bundles) {
     const original = fs.readFileSync(bundle, "utf8");
     const result = patchBundle(original);
-    if (!result.supported) {
-      supported = false;
-      reason = result.reason;
-      break;
-    }
-    if (result.text !== original) pending.push([bundle, Buffer.from(result.text), path.basename(bundle)]);
+    if (!result.supported || result.text === original) continue;
+    pending.push([bundle, Buffer.from(result.text), path.basename(bundle)]);
   }
-  if (!supported) {
-    return { changed: false, supported: false, reason };
+  if (pending.length === 0) {
+    return { changed: false, supported: true, reason: "" };
   }
 
   for (const [file, data] of pending) originals.set(file, fs.readFileSync(file));
@@ -267,6 +257,7 @@ function applyToTree(root) {
 
 module.exports = {
   CSS,
+  SCRIPT,
   EXACT_PATCHES,
   applyToTree,
   checksum,

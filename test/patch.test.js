@@ -76,10 +76,40 @@ test("apply writes a fake install and a second run is a no-op", () => {
   assert.equal(second.supported, true);
 });
 
-test("the installed Cursor build is already in the supported shape", () => {
+test("the installed Cursor build is left intact when its script is unknown", () => {
   const file = "/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js";
   if (!fs.existsSync(file)) return;
-  const result = patchBundle(fs.readFileSync(file, "utf8"));
-  assert.equal(result.supported, true);
-  assert.equal(result.text, fs.readFileSync(file, "utf8"));
+  const original = fs.readFileSync(file, "utf8");
+  const result = patchBundle(original);
+  if (!result.supported) assert.equal(result.text, original);
+  else assert.equal(isDirectionReady(result.text), true);
+});
+
+test("a renamed Cursor build still gets the page script", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "hebrew-rtl-"));
+  const htmlPath = path.join(root, "out/vs/code/electron-sandbox/workbench/workbench.html");
+  const jsPath = path.join(root, "out/vs/workbench/workbench.desktop.main.js");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.mkdirSync(path.dirname(jsPath), { recursive: true });
+  fs.writeFileSync(htmlPath, "<html><body></body>\n</html>");
+  fs.writeFileSync(jsPath, "function notCursor(){return 1}");
+  fs.writeFileSync(
+    path.join(root, "product.json"),
+    JSON.stringify({
+      checksums: {
+        "vs/code/electron-sandbox/workbench/workbench.html": "old",
+        "vs/workbench/workbench.desktop.main.js": "old",
+      },
+    })
+  );
+  const first = applyToTree(root);
+  assert.equal(first.supported, true);
+  assert.equal(first.changed, true);
+  const html = fs.readFileSync(htmlPath, "utf8");
+  assert.equal(html.includes("hebrew-rtl-start"), true);
+  assert.equal(html.includes("\\u0590"), true);
+  assert.equal(fs.readFileSync(jsPath, "utf8"), "function notCursor(){return 1}");
+  const product = JSON.parse(fs.readFileSync(path.join(root, "product.json"), "utf8"));
+  assert.notEqual(product.checksums["vs/code/electron-sandbox/workbench/workbench.html"], "old");
+  assert.equal(applyToTree(root).changed, false);
 });

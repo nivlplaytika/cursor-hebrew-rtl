@@ -6,11 +6,11 @@ A line with no Hebrew word stays left-to-right. A fenced code block stays left-t
 
 ## Install
 
-Download `hebrew-rtl-0.1.0.vsix` from the [releases](https://github.com/nivlplaytika/cursor-hebrew-rtl/releases/tag/v0.1.0) and install it with **Extensions: Install from VSIX**.
+Download `hebrew-rtl-0.2.0.vsix` from the [releases](https://github.com/nivlplaytika/cursor-hebrew-rtl/releases) and install it with **Extensions: Install from VSIX**.
 
-Cursor has to reload once after the first install. The extension applies again by itself after a Cursor update, on the next startup.
+Cursor has to reload once after the first install. A Cursor update replaces the app files and removes the script. The extension writes it back on the next startup, because the script lives in the page both the editor and the Agents window load. It does not depend on the names inside Cursor's chat script.
 
-The current patch matches Cursor 3.27.22 (27 October 2026). A newer Cursor build can rename the internal chat script. On an unknown build the extension changes nothing and says this version is not supported yet.
+The first launch after a Cursor update can show "Your Cursor installation appears to be corrupt. Please reinstall." Reload the window once more. The install is intact.
 
 ## What it changes
 
